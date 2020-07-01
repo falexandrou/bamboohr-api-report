@@ -1,5 +1,8 @@
 """Formatters the report"""
 # -*- coding: utf-8 -*-
+import re
+import datetime
+
 
 def _create_full_name(first_name=None, middle_name=None, last_name=None):
     """Returns a full name based on the given information"""
@@ -87,3 +90,21 @@ def get_dependant_full_name(entry):
         first_name=entry.get('dependentFirstName'),
         middle_name=entry.get('dependentMiddleName'),
         last_name=entry.get('dependentLastName'))
+
+
+def get_formatted_salary(entry):
+    """Returns the salary formatted"""
+    salary = entry.get('salary', '').strip()
+    return salary if re.match(r'[0-9]+', salary) else None
+
+
+def get_validated_date(date_text):
+    """Returns a formatted date"""
+    if not date_text:
+        return None
+
+    try:
+        datetime.datetime.strptime(date_text, '%Y-%m-%d')
+        return date_text
+    except ValueError:
+        return None

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 from formatters import get_full_name, get_address, get_annual_leave, get_sick_leave, \
-    get_maternity_leave, get_paternity_leave, get_emergency_phone, get_dependant_full_name
+    get_maternity_leave, get_paternity_leave, get_emergency_phone, \
+    get_dependant_full_name, get_formatted_salary, get_validated_date
 
 # Map the fields in the CSV to the fields in the report
 CSV_FIELDS_TO_REPORT = {
@@ -66,6 +67,10 @@ CALCULATED_FIELDS = {
     'paternityLeave': get_paternity_leave,
     'emergencyPhone': get_emergency_phone,
     'dependentFullName': get_dependant_full_name,
+    'salary': get_formatted_salary,
+    'startDate': lambda e: get_validated_date(e.get('startDate')),
+    'birthDate': lambda e: get_validated_date(e.get('birthDate')),
+    'dependentBirthDate': lambda e: get_validated_date(e.get('dependentBirthDate')),
 }
 
 ORDERED_FIELDS = [
@@ -126,3 +131,31 @@ def get_employee_entry(row):
         entry[field] = value
 
     return entry
+
+
+def filter_empty_values_from_entry(entry):
+    """Filters the empty values from the dependent entries"""
+    return OrderedDict({key: value if value else None for key, value in entry.items()})
+
+
+def remove_employee_number(entry):
+    """Removes employee number from rows"""
+    entry['employeeNumber'] = None
+    return entry
+
+
+def order_employee_entries(entries):
+    """
+    Orders an employee’s entries, first by the main entry that contains
+    the employee’s information and then by the dependents
+    """
+    main = None
+    additionals = []
+
+    for entry in entries:
+        if entry.get('fullName'):
+            main = entry
+        else:
+            additionals.append(filter_empty_values_from_entry(entry))
+
+    return [main, *[remove_employee_number(e) for e in additionals]]

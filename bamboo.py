@@ -2,8 +2,12 @@
 """Runs the bamboo integration"""
 # -*- coding: utf-8 -*-
 import os
+import csv
+import datetime
 from PyBambooHR import PyBambooHR
-from utils import get_employee_entry
+from utils import get_employee_entry, order_employee_entries
+
+CSV_FILE_NAME = os.environ.get('ERP_EXPORT_FILENAME', 'erp-export.csv')
 
 client = PyBambooHR.PyBambooHR(
     subdomain=os.environ.get('BAMBOOHR_SUBDOMAIN'),
@@ -25,5 +29,27 @@ for entry in entries:
 
     entries_per_employee[employee_number].append(entry)
 
-import pdb; pdb.set_trace()
-pass
+for employee_number, entries in entries_per_employee.items():
+    entries_per_employee[employee_number] = order_employee_entries(entries)
+
+
+# Output the file
+header_written = False
+
+with open(CSV_FILE_NAME, 'w+') as csvfile:
+    writer = csv.writer(csvfile, dialect='excel', quoting=csv.QUOTE_ALL)
+
+    for _, employee_entries in entries_per_employee.items():
+        if not employee_entries:
+            continue
+
+        if not header_written:
+            writer.writerow(employee_entries[0].keys())
+            header_written = True
+
+        writer.writerows([e.values() for e in employee_entries])
+
+    csvfile.close()
+
+current_date = datetime.datetime.now().strftime('%A %d %B %Y %H:%M:%S')
+print(f'[{current_date}] Exported Bamboo HR information')
