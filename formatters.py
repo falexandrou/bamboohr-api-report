@@ -44,7 +44,7 @@ def get_address(entry):
     return ', '.join(address_parts).strip(', ')
 
 
-def _calculate_leave(taken=0.0, balance=0.0):
+def _calculate_leave(taken=0.0, balance=0.0, accumulative=False):
     """Calculates the total leave for the user"""
     try:
         taken = float(taken)
@@ -56,7 +56,7 @@ def _calculate_leave(taken=0.0, balance=0.0):
     except ValueError:
         balance = 0.0
 
-    return taken + balance
+    return taken + balance if accumulative else taken
 
 
 def get_annual_leave(entry):
@@ -95,7 +95,7 @@ def get_dependant_full_name(entry):
 def get_formatted_salary(entry):
     """Returns the salary formatted"""
     salary = entry.get('salary', '').strip()
-    return salary if re.match(r'[0-9]+', salary) else None
+    return re.sub(r'[^0-9\,\.]+', '', salary) if re.match(r'[0-9]+', salary) else None
 
 
 def get_validated_date(date_text):

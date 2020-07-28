@@ -34,7 +34,7 @@ for employee_number, entries in entries_per_employee.items():
 
 
 # Output the file
-header_written = False
+HEADER_WRITTEN = False
 
 with open(CSV_FILE_NAME, 'w+') as csvfile:
     writer = csv.writer(csvfile, dialect='excel', quoting=csv.QUOTE_ALL)
@@ -43,9 +43,9 @@ with open(CSV_FILE_NAME, 'w+') as csvfile:
         if not employee_entries:
             continue
 
-        if not header_written:
+        if not HEADER_WRITTEN:
             writer.writerow(employee_entries[0].keys())
-            header_written = True
+            HEADER_WRITTEN = True
 
         writer.writerows([e.values() for e in employee_entries])
 
